@@ -1,8 +1,9 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.encoders import jsonable_encoder
 
 import os
+import gtext
 
 
 app = FastAPI()
@@ -21,28 +22,44 @@ as Véronico is for me to be a icon, and I'm a realist
 
 
 @app.get("/")
-def read_root():
+async def read_root():
     return HTMLResponse(content="<h1>Hello world</h1>")
 
 
+@app.get("/index")
+async def index():
+    return RedirectResponse('/notfound')
+
+
+@app.get("/notfound", status_code=404)
+async def notfound():
+    return {"text": "Resource Not Found"}
+
+
 @app.get("/main")
-def read_main():
+async def read_main():
     data = "Hello my beloved man (≧◡≦) ♡"
     return PlainTextResponse(content=data)
 
 
 @app.get("/api/main")
-def main_ai_response():  # hide data processing to json
+async def main_ai_response():  # hide data processing to json
     return {'text': who_rei,
             'id': 0.01}
 
 
 @app.get("/api/dream1")
-def dream_ai():  # real data processing to json
+async def dream_ai():  # real data processing to json
     data = {"text": dream_rei}
-    json_data = jsonable_encoder(data)
+    json_data = await jsonable_encoder(data)
 
     return JSONResponse(content=json_data)
+
+
+@app.get("/api/aitext")
+async def get_model(text="I love you"):
+    return {"query": text,
+            "answer": gtext.gen_rei_text(text)}
 
 
 if __name__ == "__main__":
